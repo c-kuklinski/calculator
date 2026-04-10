@@ -1,0 +1,72 @@
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      RUN_TESTS:
+        description: run tests
+        type: boolean
+        default: false
+        required: false
+        
+env:
+  RUN_TESTS: ${{ github.event.inputs.RUN_TESTS || vars.RUN_TESTS || 'true' }}
+
+jobs:
+  cd:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: init
+        run: |
+          echo 'step init'
+          pwd && ls
+          env
+          echo ${{ secrets.DOCKERHUB_TOKEN }}
+          echo ${{ env.RUN_TESTS }}
+          java -version
+          mvn -v
+          docker version
+          
+      - name: build
+        run: |
+          echo 'run tests'
+          mvn clean package -DskipTests
+          
+      - if: env.RUN_TESTS == 'true'
+        name: test
+        run: |
+          echo 'step test'
+          mvn test -P run-integration-tests
+      - if: env.RUN_TESTS == 'true'
+        uses: dorny/test-reporter@v3
+        with:
+          name: JUnit Tests Report
+          reporter: java-junit
+          path: target/surefire-reports/*.xml
+          fail-on-error: false
+
+      - if: env.RUN_TESTS == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: JaCoCo Coverage Report
+          path: target/site/jacoco/
+        
+      - name: release
+        run: |
+          echo 'step release'
+          docker build -t lion78at/calculator --no-cache .
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u lion78at --password-stdin
+          docker push lion78at/calculator
+        
+      - name: deploy
+        uses: Azure/k8s-deploy@v5
+        with: 
+          manifests: calculator-ci.yaml
+          annotate-resources: false
+
+          
+
+    
+    
