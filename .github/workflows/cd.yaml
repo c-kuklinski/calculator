@@ -59,7 +59,12 @@ jobs:
           docker build -t lion78at/calculator --no-cache .
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u lion78at --password-stdin
           docker push lion78at/calculator
-        
+
+      - uses: Azure/k8s-set-context@v5
+        with:
+           kubeconfig: ${{ secrets.KUBECONFIG_FILE }}
+           context: kubernetes-admin@kubernetes
+           
       - name: deploy
         uses: Azure/k8s-deploy@v5
         with: 
