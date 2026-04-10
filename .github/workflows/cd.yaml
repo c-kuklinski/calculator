@@ -56,9 +56,9 @@ jobs:
       - name: release
         run: |
           echo 'step release'
-          docker build -t lion78at/calculator --no-cache .
-          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u lion78at --password-stdin
-          docker push lion78at/calculator
+          docker build -t ghcr.io/${{ github.repository }} --no-cache .
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/${{ github.repository }}
 
       - uses: Azure/k8s-set-context@v5
         with:
@@ -68,7 +68,7 @@ jobs:
       - name: deploy
         uses: Azure/k8s-deploy@v5
         with: 
-          manifests: calculator-ci.yaml
+          manifests: calculator-cd.yaml
           annotate-resources: false
 
           
