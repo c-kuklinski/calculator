@@ -28,14 +28,16 @@ jobs:
           docker version
           
       - name: build
-        run: ./build-and-deploy.sh
+        run: mvn clean package -DskipTests
           
       - name: test
-        run: mvn test -P run-integration-tests   
-    
+        run: mvn test -P run-integration-tests
           
       - name: release
-        run: docker build .
+        run: |
+          docker build -t lion78at/calculator --no-cache .
+          docker login -u lion78at
+          docker push lion78at/calculator
         
       - name: deploy
         run: echo 'step deploy'
