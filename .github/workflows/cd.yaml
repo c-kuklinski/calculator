@@ -61,13 +61,11 @@ jobs:
           docker push lion78at/calculator
         
       - name: deploy
-        run: | 
-          echo 'step deploy'
-          uses: Azure/k8s-deploy@v5
-          with: 
-            manifests: calculator-ci.yaml
-          #use context....
-          # deploy ...
+        uses: Azure/k8s-deploy@v5
+        with: 
+          manifests: calculator-ci.yaml
+          annotate-resources: false
+
           
 
     
