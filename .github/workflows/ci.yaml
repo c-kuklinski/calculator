@@ -28,15 +28,14 @@ jobs:
           docker version
           
       - name: build
-        run: echo 'step build'
-  
+        run: ./build-and-deploy.sh
           
       - name: test
-        run: echo 'step test'
+        run: mvn test -P run-integration-tests   
     
           
       - name: release
-        run: echo 'step release'
+        run: docker build .
         
       - name: deploy
         run: echo 'step deploy'
